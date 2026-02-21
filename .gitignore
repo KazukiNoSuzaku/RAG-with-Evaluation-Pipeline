@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Environment / secrets — NEVER commit real keys
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Generated data (large, reproducible)
+data/vectorstore*/
+data/embedding_cache/
+data/processed/
+
+# Logs
+*.log
+
+# Results (optional — remove these lines if you want results tracked)
+results/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,96 @@
+Retrieval Augmented Generation (RAG): A Comprehensive Overview
+
+What is Retrieval Augmented Generation?
+
+Retrieval Augmented Generation, commonly abbreviated as RAG, is an artificial intelligence architecture that enhances large language model (LLM) responses by dynamically retrieving relevant information from an external knowledge base at inference time. RAG was introduced by Lewis et al. in a 2020 paper titled "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks" from Facebook AI Research (now Meta AI).
+
+The core insight behind RAG is that language models, despite their impressive capabilities, have two fundamental limitations: their knowledge is frozen at training time, and they sometimes generate plausible-sounding but factually incorrect information — a phenomenon called hallucination. RAG addresses both problems by grounding model responses in retrieved, up-to-date documents.
+
+How RAG Works: The Pipeline
+
+A RAG system consists of two main components: a retrieval component and a generation component.
+
+1. Retrieval Component
+The retrieval component is responsible for finding the most relevant passages from a document collection given a user query. It typically involves:
+- Document ingestion: Loading source documents (PDFs, web pages, text files, etc.)
+- Chunking: Splitting documents into smaller, manageable passages
+- Embedding: Converting text passages into dense vector representations using an embedding model
+- Vector storage: Storing embeddings in a vector database for efficient similarity search
+- Query retrieval: At inference time, embedding the user query and finding the most similar document chunks using approximate nearest neighbor search
+
+2. Generation Component
+The generation component takes the retrieved context and the user question and produces a final answer. The retrieved passages are inserted into a prompt template alongside the question, and the LLM generates an answer grounded in that context.
+
+Key Benefits of RAG
+
+RAG provides several advantages over standard LLM usage:
+
+Knowledge currency: RAG systems can access up-to-date information without retraining the model. The knowledge base can be updated independently of the LLM.
+
+Reduced hallucination: By constraining the model to answer from retrieved context, RAG significantly reduces the tendency to fabricate information.
+
+Source attribution: RAG systems can provide citations by tracking which documents were retrieved, enabling users to verify answers.
+
+Domain specialisation: RAG allows general-purpose LLMs to perform well in specialised domains (legal, medical, finance) without expensive fine-tuning.
+
+Cost efficiency: Updating a vector database is far cheaper than retraining or fine-tuning an LLM.
+
+Main Components of a RAG System
+
+A complete RAG system requires the following components:
+
+Document Loader: Reads raw documents from various sources (files, databases, APIs) and converts them to a uniform text format.
+
+Text Splitter (Chunker): Divides long documents into smaller chunks that fit within the LLM's context window and that capture coherent semantic units. Common strategies include recursive character splitting, semantic chunking, and sentence splitting.
+
+Embedding Model: Converts text chunks into dense vector representations (typically 384 to 1536 dimensions). Popular choices include OpenAI's text-embedding-3-small, sentence-transformers/all-MiniLM-L6-v2, and BAAI/bge-large-en.
+
+Vector Database: Stores embeddings and enables fast approximate nearest neighbor search. Common options are FAISS (local, fast), Chroma (embedded database), Pinecone (cloud, managed), and Weaviate (open-source, scalable).
+
+Retriever: Given a query, retrieves the top-k most semantically similar chunks from the vector database. Retrieval strategies include similarity search, Maximum Marginal Relevance (MMR), and hybrid search (combining dense and sparse retrieval).
+
+Generator (LLM): Takes the retrieved context and the query and generates the final answer. The LLM is typically instructed via a system prompt to answer only from the provided context.
+
+Prompt Template: The structured format that combines the user question and retrieved context into a complete LLM input. Well-designed prompt templates are critical for grounded generation.
+
+RAG Variants
+
+Several variants of the basic RAG architecture have been developed:
+
+Naive RAG: The simplest form — retrieve chunks, insert into prompt, generate answer.
+
+Advanced RAG: Adds pre-retrieval query expansion, post-retrieval re-ranking, and iterative refinement.
+
+Modular RAG: Treats each component as an independently swappable module, allowing mix-and-match of different retrievers, rerankers, and generators.
+
+Agentic RAG: Combines RAG with LLM agents that can decide when to retrieve, what to search for, and how to combine multiple retrievals.
+
+Graph RAG: Uses knowledge graphs alongside vector retrieval to capture structured relationships between entities.
+
+Challenges and Limitations
+
+Despite its advantages, RAG faces several challenges:
+
+Retrieval quality: If the retrieved chunks are not relevant, the model will either give a wrong answer or say it doesn't know. Retrieval quality is the bottleneck in most RAG systems.
+
+Context window limits: LLMs have finite context windows. If many chunks are retrieved, they may not all fit, or the model may lose information in the middle of long contexts.
+
+Chunk granularity: Chunks that are too small lack context; chunks that are too large dilute relevance signals. Choosing the right chunk size is critical.
+
+Answer faithfulness: Even with retrieved context, models can drift from the source material. Enforcing strict grounding requires careful prompt engineering.
+
+Latency: RAG adds retrieval latency on top of LLM inference latency, which can be problematic for real-time applications.
+
+Best Practices
+
+To build effective RAG systems, practitioners should follow these guidelines:
+
+Choose chunk sizes appropriate to the domain: Technical documentation typically benefits from smaller chunks (256-512 tokens) while narrative text can use larger chunks (512-1024 tokens).
+
+Overlap chunks: Use 10-20% overlap between consecutive chunks to avoid cutting off context at boundaries.
+
+Use metadata filtering: Attach metadata (date, source, section) to chunks and filter at retrieval time to improve precision.
+
+Evaluate systematically: Use frameworks like RAGAS to measure faithfulness, answer relevance, context precision, and context recall. Track metrics across experiments to drive improvements.
+
+Iterate on prompts: The system prompt instructing the model to answer only from context is the single most impactful intervention for reducing hallucination.

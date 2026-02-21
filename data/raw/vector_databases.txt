@@ -1,0 +1,77 @@
+Vector Databases: The Foundation of Semantic Search
+
+Introduction to Vector Databases
+
+A vector database is a specialised data storage system designed to store, index, and query high-dimensional vector embeddings efficiently. Unlike traditional relational databases that store structured rows and columns, vector databases are optimised for similarity search — finding the vectors most similar to a given query vector in a high-dimensional space.
+
+Vector databases are a foundational component of modern AI systems, particularly in applications involving semantic search, recommendation engines, and Retrieval Augmented Generation (RAG) pipelines.
+
+Why Vector Databases Are Needed
+
+Traditional databases use exact match or range queries (e.g., WHERE name = 'Alice'). These are unsuitable for semantic similarity because there is no natural ordering or exact match criterion for meaning. Two sentences can be semantically identical while being lexically completely different.
+
+Vector embeddings solve this by mapping text (or images, audio, etc.) into a continuous vector space where semantically similar items are geometrically close. A vector database enables fast retrieval of the nearest neighbours in this space.
+
+Without specialised indexing structures, finding the nearest neighbours of a vector among millions of stored vectors would require computing the distance to every stored vector — an O(n) operation that is prohibitively slow at scale. Vector databases use approximate nearest neighbor (ANN) algorithms to answer queries in sub-linear time.
+
+Key Concepts
+
+Embeddings: Dense numerical vectors that represent the semantic content of text or other data. A typical text embedding has between 384 and 1536 dimensions.
+
+Similarity metrics: The most common measures of vector similarity are cosine similarity (angle between vectors, scale-invariant) and dot product (inner product, used when vectors are normalised). L2 (Euclidean) distance is also used but is less common in NLP.
+
+Approximate Nearest Neighbor (ANN): Algorithms that trade off a small amount of search accuracy for massive speed gains. The most important ANN algorithms are:
+- HNSW (Hierarchical Navigable Small World graphs): A graph-based index that achieves very high recall at high query speeds. Used by most modern vector databases.
+- IVF (Inverted File Index): Partitions the vector space into clusters (Voronoi cells). Queries only search relevant clusters.
+- LSH (Locality Sensitive Hashing): A probabilistic method that hashes similar vectors to the same bucket.
+
+Popular Vector Database Systems
+
+FAISS (Facebook AI Similarity Search): An open-source library developed by Meta AI Research. FAISS is an in-process library (not a standalone server) that provides highly optimised ANN search. It supports GPU acceleration, multiple index types (Flat, IVF, HNSW), and is the fastest option for research and small-to-medium production deployments. FAISS stores indexes on disk as serialised binary files. It does not natively support metadata filtering.
+
+Chroma: An open-source, embedded vector database with a Python-first API. Chroma uses SQLite for metadata storage and supports metadata filtering alongside vector search. It requires no server setup and is well-suited for development and medium-scale production. Chroma integrates natively with LangChain and LlamaIndex.
+
+Pinecone: A managed cloud vector database offering serverless and pod-based deployment. Pinecone handles infrastructure automatically, provides CRUD operations on vectors, supports metadata filtering, and offers real-time index updates. It is suitable for large-scale production systems where operational simplicity is prioritised over cost.
+
+Weaviate: An open-source, cloud-native vector database with a GraphQL API and native support for multiple data modalities. Weaviate supports hybrid search (combining BM25 keyword search with vector search), named vectors (multiple vector fields per object), and built-in vectorisation modules.
+
+Qdrant: An open-source vector database with a Rust implementation for high performance. Qdrant supports advanced filtering, payload indexing, on-disk storage, and distributed deployment. It provides a REST and gRPC API.
+
+pgvector: A PostgreSQL extension that adds vector similarity search to the PostgreSQL relational database. This allows teams to add semantic search to existing PostgreSQL deployments without introducing a new database system.
+
+Milvus: An open-source, distributed vector database designed for production workloads. Milvus uses HNSW or IVF indexes, supports multiple index types, and scales horizontally to billions of vectors.
+
+Choosing a Vector Database
+
+When selecting a vector database, consider the following factors:
+
+Scale: How many vectors will be stored? FAISS handles millions easily in memory; Pinecone and Milvus scale to billions.
+
+Latency requirements: For sub-10ms query latency, use FAISS (in-memory) or Pinecone. Chroma and Weaviate are suitable for 50-200ms latency budgets.
+
+Metadata filtering: If you need to filter results by metadata (e.g., date, category, author), Chroma, Weaviate, Qdrant, and Pinecone all support this natively. FAISS does not.
+
+Operational complexity: Managed services (Pinecone) have the lowest ops burden. Embedded databases (FAISS, Chroma) have the simplest setup. Distributed systems (Milvus, Weaviate) require more infrastructure expertise.
+
+Cost: FAISS and Chroma are free. Cloud services like Pinecone charge per vector stored and per query.
+
+Integration: All major vector databases integrate with LangChain and LlamaIndex, which provide unified abstractions for the RAG pipeline.
+
+Vector Search in Practice
+
+In a typical RAG pipeline, the vector database workflow is:
+
+1. At index time: For each document chunk, generate an embedding using the embedding model, then insert the (embedding, chunk_text, metadata) tuple into the vector database.
+
+2. At query time: Generate an embedding for the user query, perform an ANN search against the stored embeddings, retrieve the top-k most similar chunks, and pass their text content to the LLM.
+
+The quality of retrieval depends critically on:
+- The embedding model (better models produce more semantically meaningful vectors)
+- The index type and parameters (HNSW with ef_search tuned for the recall/speed tradeoff)
+- The number of retrieved chunks (k): too few risks missing relevant information; too many dilutes the context
+
+Hybrid Search
+
+A powerful extension of pure vector search is hybrid search, which combines vector similarity search with keyword (BM25) search. The two result sets are merged using Reciprocal Rank Fusion (RRF) or a weighted combination. Hybrid search improves recall for precise keyword matches (product names, code identifiers, proper nouns) while maintaining semantic flexibility.
+
+Weaviate, Qdrant, and Elasticsearch all support hybrid search natively.

@@ -1,0 +1,62 @@
+[
+  {
+    "question": "What is Retrieval Augmented Generation (RAG)?",
+    "ground_truth": "Retrieval Augmented Generation (RAG) is an AI architecture that enhances large language model responses by dynamically retrieving relevant information from an external knowledge base at inference time. It was introduced by Lewis et al. in a 2020 paper from Facebook AI Research. RAG addresses the limitations of LLMs by grounding model responses in retrieved, up-to-date documents, reducing hallucination and enabling access to current information."
+  },
+  {
+    "question": "What are the main components of a RAG system?",
+    "ground_truth": "A complete RAG system requires the following components: a Document Loader that reads raw documents and converts them to text, a Text Splitter (Chunker) that divides documents into smaller chunks, an Embedding Model that converts text chunks into dense vector representations, a Vector Database that stores embeddings and enables fast similarity search, a Retriever that retrieves the top-k most semantically similar chunks given a query, a Generator (LLM) that takes the retrieved context and query to generate a final answer, and a Prompt Template that structures the combination of question and context."
+  },
+  {
+    "question": "What is faithfulness in the context of RAGAS evaluation?",
+    "ground_truth": "Faithfulness measures the factual consistency of the generated answer with respect to the retrieved context. It measures what fraction of the claims made in the answer can be directly inferred from the retrieved context passages. RAGAS uses an LLM to decompose the answer into atomic claims and verifies each claim against the context. The score ranges from 0 to 1, where 1.0 means every claim in the answer is grounded in the retrieved context. Low faithfulness indicates hallucination."
+  },
+  {
+    "question": "What does context precision measure in RAGAS?",
+    "ground_truth": "Context precision measures the quality of the retrieval ranking — specifically, whether the most relevant chunks are ranked higher than less relevant ones. RAGAS uses an LLM to judge whether each retrieved chunk is actually relevant to answering the question. Context precision is the mean of precision values at each rank position where a relevant chunk appears. A score of 1.0 means all relevant chunks appear before irrelevant ones. Low context precision means relevant chunks are buried at the bottom of the retrieval list, which hurts generation because LLMs suffer from 'lost in the middle' effects."
+  },
+  {
+    "question": "What is context recall and how is it computed?",
+    "ground_truth": "Context recall measures how well the retrieved context covers all the information needed to answer the question. It answers whether the retrieved context contains everything that the ground-truth answer claims. RAGAS decomposes the ground-truth answer into individual claims and verifies each claim against the retrieved context using an LLM judge. The formula is: Context Recall = (Number of ground-truth claims attributable to context) / (Total number of ground-truth claims). A score of 1.0 means the context contains all information in the ground-truth answer."
+  },
+  {
+    "question": "What is FAISS and what are its main characteristics?",
+    "ground_truth": "FAISS (Facebook AI Similarity Search) is an open-source library developed by Meta AI Research. It is an in-process library (not a standalone server) that provides highly optimised approximate nearest neighbor search. FAISS supports GPU acceleration, multiple index types (Flat, IVF, HNSW), and is the fastest option for research and small-to-medium production deployments. FAISS stores indexes on disk as serialised binary files. It does not natively support metadata filtering."
+  },
+  {
+    "question": "What are the key benefits of using RAG over standard LLM usage?",
+    "ground_truth": "RAG provides several advantages over standard LLM usage: Knowledge currency (RAG can access up-to-date information without retraining), reduced hallucination (constraining the model to answer from retrieved context reduces fabrication), source attribution (RAG can provide citations by tracking which documents were retrieved), domain specialisation (allows general-purpose LLMs to perform in specialised domains without fine-tuning), and cost efficiency (updating a vector database is far cheaper than retraining an LLM)."
+  },
+  {
+    "question": "What is the difference between similarity search and MMR in retrieval?",
+    "ground_truth": "Similarity search retrieves the top-k chunks most semantically similar to the query using cosine or dot-product distance. It is deterministic and fast. Maximal Marginal Relevance (MMR) fetches a larger candidate pool first and then re-ranks for diversity — it reduces redundant context when chunks are semantically near-duplicate. MMR is useful when the top retrieved chunks would all be very similar to each other, providing diverse coverage of the topic."
+  },
+  {
+    "question": "What is answer relevancy in RAGAS?",
+    "ground_truth": "Answer relevancy measures how well the generated answer addresses the original question. An answer that is factually correct but does not address what was actually asked will have a low answer relevancy score. RAGAS uses an LLM to generate several candidate questions from the answer, then measures the cosine similarity between the original question embedding and the embeddings of these generated questions. High similarity indicates the answer addresses the question. The score ranges from 0 to 1."
+  },
+  {
+    "question": "What chunk size is recommended for technical documentation in RAG?",
+    "ground_truth": "According to RAG best practices, technical documentation typically benefits from smaller chunks of 256 to 512 tokens, while narrative text can use larger chunks of 512 to 1024 tokens. Additionally, practitioners should use 10 to 20 percent overlap between consecutive chunks to avoid cutting off context at boundaries."
+  },
+  {
+    "question": "What are the main challenges and limitations of RAG systems?",
+    "ground_truth": "RAG faces several challenges: retrieval quality (if retrieved chunks are not relevant, the model will give wrong answers and retrieval quality is the main bottleneck), context window limits (LLMs have finite context windows and many chunks may not fit), chunk granularity (chunks too small lack context while chunks too large dilute relevance signals), answer faithfulness (models can drift from source material), and latency (RAG adds retrieval latency on top of LLM inference latency which can be problematic for real-time applications)."
+  },
+  {
+    "question": "What is hybrid search and how does it work?",
+    "ground_truth": "Hybrid search combines vector similarity search with keyword (BM25) search. The two result sets are merged using Reciprocal Rank Fusion (RRF) or a weighted combination. Hybrid search improves recall for precise keyword matches such as product names, code identifiers, and proper nouns while maintaining semantic flexibility. Weaviate, Qdrant, and Elasticsearch all support hybrid search natively."
+  },
+  {
+    "question": "What RAGAS scores are generally considered good for production RAG systems?",
+    "ground_truth": "According to RAGAS interpretation guidelines, a faithfulness score above 0.8 is generally considered good for production RAG systems. An answer relevancy score above 0.75 indicates the system is addressing questions well. Context precision above 0.7 suggests retrieval ranking is working correctly. Context recall above 0.8 means the retrieval system is finding most of the relevant information."
+  },
+  {
+    "question": "What does Chroma offer as a vector database compared to FAISS?",
+    "ground_truth": "Chroma is an open-source, embedded vector database with a Python-first API. Unlike FAISS, Chroma uses SQLite for metadata storage and supports metadata filtering alongside vector search. Chroma requires no server setup and is well-suited for development and medium-scale production. It integrates natively with LangChain and LlamaIndex. FAISS, by contrast, does not natively support metadata filtering but is faster and supports GPU acceleration."
+  },
+  {
+    "question": "What is the 'lost in the middle' problem in RAG?",
+    "ground_truth": "The 'lost in the middle' problem refers to the tendency of LLMs to use information at the beginning and end of the context window more than information placed in the middle. This is relevant to RAG because if the most relevant chunks are ranked last in the retrieved context (low context precision), they may effectively be ignored by the generator even though they were retrieved. This is why context precision — ensuring relevant chunks appear at the top of the retrieval list — is important."
+  }
+]

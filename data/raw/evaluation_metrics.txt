@@ -1,0 +1,110 @@
+Evaluating RAG Systems: RAGAS Metrics and Beyond
+
+Why RAG Evaluation Matters
+
+Evaluating Retrieval Augmented Generation systems is significantly more complex than evaluating traditional NLP tasks. A RAG pipeline has two distinct components — retrieval and generation — each of which can fail independently. A good retriever with a bad generator produces unfaithful answers. A bad retriever with a good generator produces answers that are coherent but based on the wrong information.
+
+Systematic evaluation is essential for:
+- Diagnosing which component (retrieval or generation) is the bottleneck
+- Comparing different configurations (chunk sizes, embedding models, k values)
+- Tracking quality improvements over time
+- Preventing regressions when updating the system
+
+RAGAS: Retrieval Augmented Generation Assessment
+
+RAGAS (Retrieval Augmented Generation Assessment) is an open-source framework specifically designed for evaluating RAG pipelines without requiring human annotators for every evaluation. RAGAS was introduced in 2023 by Es et al. and has become the de facto standard for automated RAG evaluation.
+
+RAGAS uses LLM-as-a-judge techniques to score pipeline outputs along multiple dimensions. The key RAGAS metrics are:
+
+Faithfulness
+
+Definition: Faithfulness measures the factual consistency of the generated answer with respect to the retrieved context. Specifically, it measures what fraction of the claims made in the answer can be directly inferred from the retrieved context passages.
+
+Computation: RAGAS uses an LLM to decompose the generated answer into atomic claims, then verifies each claim against the retrieved context. The faithfulness score is the ratio of supported claims to total claims.
+
+Formula: Faithfulness = (Number of claims in answer supported by context) / (Total number of claims in answer)
+
+Range: 0 to 1. A score of 1.0 means every claim in the answer is grounded in the retrieved context. A score of 0.0 means no claims are supported.
+
+Why it matters: Low faithfulness indicates the model is hallucinating — making claims not present in the retrieved documents. This is the most critical failure mode in RAG systems.
+
+What affects it: Faithfulness is most affected by the quality of the LLM's prompt and its tendency to confabulate. Grounding prompts that explicitly instruct the model to answer only from context significantly improve faithfulness.
+
+Answer Relevancy
+
+Definition: Answer relevancy measures how well the generated answer addresses the original question. An answer that is factually correct but does not address what was actually asked will have a low answer relevancy score.
+
+Computation: RAGAS uses an LLM to generate several candidate questions from the answer, then measures the cosine similarity between the original question embedding and the embeddings of these generated questions. High similarity indicates the answer addresses the question.
+
+Range: 0 to 1. Higher is better.
+
+Why it matters: A RAG system might retrieve highly relevant context and generate a faithful answer, but if the answer is verbose, evasive, or off-topic, it is not useful to the user. Answer relevancy captures this dimension.
+
+What affects it: Answer relevancy is most influenced by the LLM's instruction-following capability and the specificity of the question in the prompt template.
+
+Context Precision
+
+Definition: Context precision measures the quality of the retrieval ranking — specifically, whether the most relevant chunks are ranked higher than less relevant ones. It is analogous to Precision@k in information retrieval.
+
+Computation: RAGAS uses an LLM to judge whether each retrieved chunk is actually relevant to answering the question (given the ground-truth answer). Context precision is the mean of precision values computed at each rank position where a relevant chunk appears.
+
+Range: 0 to 1. A score of 1.0 means all relevant chunks appear before irrelevant ones. A score close to 0 means relevant chunks are buried at the bottom of the retrieval list.
+
+Why it matters: LLMs are known to suffer from "lost in the middle" effects — they tend to use information at the beginning and end of the context window more than information in the middle. If the most relevant chunks are ranked last, they may effectively be ignored by the generator.
+
+What affects it: Context precision is most affected by the embedding model quality, the retrieval strategy (similarity vs. MMR), and the chunk granularity.
+
+Context Recall
+
+Definition: Context recall measures how well the retrieved context covers all the information needed to answer the question. It answers the question: "Does the retrieved context contain everything that the ground-truth answer claims?"
+
+Computation: RAGAS decomposes the ground-truth answer into individual claims, then verifies each claim against the retrieved context using an LLM judge. Context recall is the fraction of ground-truth claims that are supported by the retrieved context.
+
+Formula: Context Recall = (Number of ground-truth claims attributable to context) / (Total number of ground-truth claims)
+
+Range: 0 to 1. A score of 1.0 means the retrieved context contains all the information in the ground-truth answer.
+
+Why it matters: Low context recall means the retrieval system missed relevant documents. The generator cannot produce a complete answer if the relevant information was not retrieved.
+
+What affects it: Context recall is most affected by the retrieval top-k value, the embedding model's ability to match query semantics to document semantics, and document coverage (whether the answer is actually in the indexed corpus).
+
+Additional RAG Evaluation Metrics
+
+Beyond RAGAS, other evaluation approaches exist:
+
+Answer Correctness: Compares the generated answer to the ground-truth answer directly, using a combination of semantic similarity and factual overlap. This is an end-to-end metric that captures the combined effect of retrieval and generation quality.
+
+Context Entity Recall: Measures whether the retrieved context contains the specific named entities (people, places, organisations, facts) mentioned in the ground-truth answer.
+
+Noise Robustness: Evaluates how well the system performs when the retrieved context contains irrelevant or misleading passages mixed with relevant ones.
+
+Negative Rejection: Tests whether the system correctly declines to answer questions that are not answerable from the available documents.
+
+Latency and Cost: Non-quality metrics that matter for production systems. Measured in milliseconds per query and cost per query.
+
+Interpreting RAGAS Scores
+
+Interpreting RAGAS scores requires context:
+
+A faithfulness score above 0.8 is generally considered good for production RAG systems.
+An answer relevancy score above 0.75 indicates the system is addressing questions well.
+Context precision above 0.7 suggests retrieval ranking is working correctly.
+Context recall above 0.8 means the retrieval system is finding most of the relevant information.
+
+Typical failure patterns and their causes:
+
+Low faithfulness + High context precision: The LLM is ignoring the retrieved context. Fix: strengthen the grounding prompt, use a more instruction-following model.
+
+High faithfulness + Low context recall: The LLM is faithful to what it retrieves, but it is not retrieving enough relevant information. Fix: increase k, improve the embedding model, or expand the chunk size.
+
+Low context precision + Low context recall: The retrieval system is failing. Fix: try a better embedding model, reduce chunk size, or improve document preprocessing.
+
+Evaluation Dataset Design
+
+The quality of a RAGAS evaluation depends heavily on the quality of the evaluation dataset. Best practices:
+
+- Include at least 20-50 questions covering different aspects of the knowledge base.
+- Include questions of varying difficulty: factual lookup, multi-hop reasoning, definition, and comparison.
+- Ground truth answers should be specific and traceable to the source documents.
+- Include negative examples: questions whose answers are not in the knowledge base.
+- Balance coverage across different document sections.
