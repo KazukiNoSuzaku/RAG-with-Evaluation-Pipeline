@@ -8,16 +8,16 @@ A production-grade **Retrieval Augmented Generation (RAG)** system with a compre
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        RAG EVALUATION PIPELINE                       │
-│                                                                      │
-│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────────────┐ │
-│  │  Raw     │   │ Chunking │   │Embedding │   │  Vector Store    │ │
-│  │  Docs    │──▶│  (size,  │──▶│  Model   │──▶│  (FAISS/Chroma)  │ │
-│  │  (.txt,  │   │  overlap)│   │  (HF /   │   │  + Disk Cache    │ │
-│  │  .md,    │   │          │   │  OpenAI) │   │                  │ │
-│  │  .pdf)   │   │          │   │          │   │                  │ │
-│  └──────────┘   └──────────┘   └──────────┘   └────────┬─────────┘ │
-│                                                          │           │
+│                        RAG EVALUATION PIPELINE                      │
+│                                                                     │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────────────┐  │
+│  │  Raw     │   │ Chunking │   │Embedding │   │  Vector Store    │  │
+│  │  Docs    │──▶│  (size,  │──▶│  Model   │──▶│  (FAISS/Chroma)│  │
+│  │  (.txt,  │   │  overlap)│   │  (HF /   │   │  + Disk Cache    │  │
+│  │  .md,    │   │          │   │  OpenAI) │   │                  │  │
+│  │  .pdf)   │   │          │   │          │   │                  │  │
+│  └──────────┘   └──────────┘   └──────────┘   └────────┬─────────┘  │
+│                                                          │          │
 │                    ┌─────────────────────────────────────┘           │
 │                    │ top-k chunks                                     │
 │                    ▼                                                  │
@@ -506,7 +506,3 @@ LANGCHAIN_PROJECT=rag-eval-pipeline
 | Visualisation | matplotlib, seaborn |
 
 ---
-
-## License
-
-MIT
