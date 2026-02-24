@@ -12,33 +12,33 @@ A production-grade **Retrieval Augmented Generation (RAG)** system with a compre
 │                                                                     │
 │  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────────────┐  │
 │  │  Raw     │   │ Chunking │   │Embedding │   │  Vector Store    │  │
-│  │  Docs    │──▶│  (size,  │──▶│  Model   │──▶│  (FAISS/Chroma)│  │
+│  │  Docs    │──▶│  (size,  │──▶│  Model  │──▶│  (FAISS/Chroma) │  │
 │  │  (.txt,  │   │  overlap)│   │  (HF /   │   │  + Disk Cache    │  │
 │  │  .md,    │   │          │   │  OpenAI) │   │                  │  │
 │  │  .pdf)   │   │          │   │          │   │                  │  │
 │  └──────────┘   └──────────┘   └──────────┘   └────────┬─────────┘  │
 │                                                          │          │
-│                    ┌─────────────────────────────────────┘           │
-│                    │ top-k chunks                                     │
-│                    ▼                                                  │
-│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────────────┐ │
-│  │  User    │   │Retriever │   │Generator │   │   RAG Answer     │ │
-│  │  Query   │──▶│ (sim /   │──▶│  (OpenAI/│──▶│  (grounded to    │ │
-│  │          │   │  MMR)    │   │ Anthropic│   │   context)       │ │
-│  └──────────┘   └──────────┘   └──────────┘   └────────┬─────────┘ │
-│                                                          │           │
+│                    ┌─────────────────────────────────────┘          │
+│                    │ top-k chunks                                   │
+│                    ▼                                                │
+│  ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────────────┐  │
+│  │  User    │   │Retriever │   │Generator │   │   RAG Answer     │  │
+│  │  Query   │──▶│ (sim /  │──▶│ (OpenAI/ │──▶│  (grounded to   │  │
+│  │          │   │  MMR)    │   │ Anthropic│   │   context)       │  │
+│  └──────────┘   └──────────┘   └──────────┘   └────────┬─────────┘  │
+│                                                          │          │
 │  ┌──────────────────────────────────────────────────────┘           │
-│  │                    RAGAS Evaluation                               │
-│  │                                                                   │
-│  │  Question + Answer + Contexts + Ground Truth                      │
-│  │                    │                                              │
+│  │                    RAGAS Evaluation                              │
+│  │                                                                  │
+│  │  Question + Answer + Contexts + Ground Truth                     │
+│  │                    │                                             │
 │  │         ┌──────────┼──────────┬──────────┐                       │
 │  │         ▼          ▼          ▼          ▼                       │
-│  │   Faithfulness  Answer    Context    Context                      │
-│  │                Relevancy  Precision  Recall                       │
-│  │                                                                   │
-│  │  → results/ragas_eval_results.csv                                 │
-│  │  → results/plots/*.png                                            │
+│  │   Faithfulness  Answer    Context    Context                     │
+│  │                Relevancy  Precision  Recall                      │
+│  │                                                                  │
+│  │  → results/ragas_eval_results.csv                                │
+│  │  → results/plots/*.png                                           │
 │  └───────────────────────────────────────────────────────────────────┘
 └─────────────────────────────────────────────────────────────────────┘
 ```
