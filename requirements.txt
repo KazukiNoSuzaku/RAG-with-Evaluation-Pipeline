@@ -67,7 +67,6 @@ seaborn>=0.13.0
 # Utilities
 # ---------------------------------------------------------------------------
 python-dotenv>=1.0.0       # .env file support
-tqdm>=4.66.0               # progress bars
 pydantic>=2.0.0            # data validation (used by LangChain/RAGAS)
 tiktoken>=0.7.0            # token counting for OpenAI models
 

@@ -247,14 +247,21 @@ class BenchmarkRunner:
         so we only rebuild the index once.  We override the persist path so
         load_vectorstore can find it.
         """
-        # Build the corpus index once to share across k values
+        # All k experiments share the same vectorstore (same corpus & embeddings)
+        shared_vs_path = str(
+            Path(self.base_config.vectorstore.persist_path).parent
+            / "vs_k_comparison"
+        )
         results = []
-        for k in k_values:
+        for i, k in enumerate(k_values):
             result = self.run_experiment(
                 name=f"retrieval_k_{k}",
                 param_name="retrieval_k",
                 param_value=k,
-                config_overrides={"retriever.k": k},
+                config_overrides={
+                    "retriever.k": k,
+                    "vectorstore.persist_path": shared_vs_path,
+                },
                 raw_documents=raw_documents,
             )
             results.append(result)

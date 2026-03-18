@@ -185,7 +185,48 @@ class RAGConfig:
     eval: EvalConfig = field(default_factory=EvalConfig)
 
     def __post_init__(self) -> None:
-        """Ensure all required directories exist on disk."""
+        """Validate configuration values and ensure directories exist."""
+        # --- Validation ---
+        if self.chunking.chunk_size <= 0:
+            raise ValueError(f"chunk_size must be positive, got {self.chunking.chunk_size}")
+        if self.chunking.chunk_overlap < 0:
+            raise ValueError(f"chunk_overlap must be non-negative, got {self.chunking.chunk_overlap}")
+        if self.chunking.chunk_overlap >= self.chunking.chunk_size:
+            raise ValueError(
+                f"chunk_overlap ({self.chunking.chunk_overlap}) must be less than "
+                f"chunk_size ({self.chunking.chunk_size})"
+            )
+        if self.retriever.k <= 0:
+            raise ValueError(f"retriever.k must be positive, got {self.retriever.k}")
+        if not 0.0 <= self.retriever.lambda_mult <= 1.0:
+            raise ValueError(
+                f"retriever.lambda_mult must be in [0, 1], got {self.retriever.lambda_mult}"
+            )
+        if not 0.0 <= self.llm.temperature <= 2.0:
+            raise ValueError(
+                f"llm.temperature must be in [0, 2], got {self.llm.temperature}"
+            )
+        if self.llm.max_tokens <= 0:
+            raise ValueError(f"llm.max_tokens must be positive, got {self.llm.max_tokens}")
+
+        # Provider / model sanity checks
+        if self.llm.provider == "anthropic" and self.llm.model_name.startswith("gpt"):
+            raise ValueError(
+                f"LLM provider is 'anthropic' but model_name is '{self.llm.model_name}'. "
+                "Use an Anthropic model (e.g. 'claude-sonnet-4-6') or switch provider to 'openai'."
+            )
+        if self.llm.provider == "openai" and self.llm.model_name.startswith("claude"):
+            raise ValueError(
+                f"LLM provider is 'openai' but model_name is '{self.llm.model_name}'. "
+                "Use an OpenAI model (e.g. 'gpt-4o-mini') or switch provider to 'anthropic'."
+            )
+        if self.embedding.provider == "openai" and self.embedding.model_name.startswith("sentence-transformers"):
+            raise ValueError(
+                f"Embedding provider is 'openai' but model_name is '{self.embedding.model_name}'. "
+                "Use an OpenAI model (e.g. 'text-embedding-3-small') or switch provider to 'huggingface'."
+            )
+
+        # --- Ensure directories exist ---
         dirs = [
             self.raw_data_dir,
             self.processed_data_dir,
