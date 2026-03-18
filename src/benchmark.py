@@ -30,7 +30,7 @@ import seaborn as sns
 from langchain_core.documents import Document
 
 from src.chunking import chunk_documents
-from src.config import RAGConfig
+from src.config import EvalConfig, RAGConfig
 from src.evaluator import (
     evaluate_with_ragas,
     load_eval_dataset,
@@ -42,13 +42,8 @@ from src.rag_pipeline import RAGPipeline
 
 logger = logging.getLogger(__name__)
 
-# Metric names we expect from RAGAS
-_RAGAS_METRICS = [
-    "faithfulness",
-    "answer_relevancy",
-    "context_precision",
-    "context_recall",
-]
+# Default metric names — sourced from EvalConfig so there is a single definition.
+_RAGAS_METRICS = list(EvalConfig().metrics)
 
 
 # ---------------------------------------------------------------------------

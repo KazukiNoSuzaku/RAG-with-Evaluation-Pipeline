@@ -130,7 +130,9 @@ def load_document(file_path: Path) -> Optional[Document]:
 
     try:
         raw = loader(file_path)
-    except Exception as exc:
+    except ImportError:
+        raise  # Missing dependency — let it propagate so the user sees the install hint
+    except (OSError, ValueError, UnicodeDecodeError) as exc:
         logger.error("Failed to load '%s': %s", file_path, exc)
         return None
 

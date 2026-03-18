@@ -127,15 +127,13 @@ def run_rag_on_dataset(
     List[Dict]
         One record per evaluation item, ready for :func:`evaluate_with_ragas`.
     """
+    questions = [item["question"] for item in eval_data]
+    logger.info("Running RAG on %d evaluation question(s) …", len(questions))
+
+    rag_results = pipeline.batch_query(questions)
+
     records = []
-    n = len(eval_data)
-
-    for i, item in enumerate(eval_data, 1):
-        question = item["question"]
-        logger.info("RAG query %d/%d: %.60s …", i, n, question)
-
-        result: RAGResult = pipeline.query(question)
-
+    for item, result in zip(eval_data, rag_results):
         records.append(
             {
                 "question": result.question,
@@ -350,13 +348,7 @@ def save_evaluation_results(
     print("  RAGAS EVALUATION SUMMARY")
     print(separator)
 
-    metric_names = [
-        "faithfulness",
-        "answer_relevancy",
-        "context_precision",
-        "context_recall",
-    ]
-    for metric in metric_names:
+    for metric in config.metrics:
         mean_key = f"{metric}_mean"
         std_key = f"{metric}_std"
         if mean_key in aggregates:

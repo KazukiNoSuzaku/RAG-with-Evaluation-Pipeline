@@ -18,6 +18,7 @@ import hashlib
 import logging
 import os
 import pickle
+import tempfile
 from pathlib import Path
 from typing import Dict, List
 
@@ -120,8 +121,18 @@ class CachedEmbeddings(Embeddings):
         return {}
 
     def _save(self) -> None:
-        with open(self._cache_path, "wb") as fh:
-            pickle.dump(self._cache, fh)
+        # Atomic write: dump to a temp file then rename, so concurrent
+        # readers never see a partially-written cache.
+        fd, tmp_path = tempfile.mkstemp(
+            dir=self._cache_path.parent, suffix=".tmp"
+        )
+        try:
+            with os.fdopen(fd, "wb") as fh:
+                pickle.dump(self._cache, fh)
+            os.replace(tmp_path, self._cache_path)
+        except BaseException:
+            os.unlink(tmp_path)
+            raise
 
     @staticmethod
     def _hash(text: str) -> str:

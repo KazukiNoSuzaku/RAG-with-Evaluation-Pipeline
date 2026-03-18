@@ -163,7 +163,8 @@ class Generator:
         )
 
         response = self.llm.invoke(messages)
-        answer: str = response.content.strip()
+        content = response.content
+        answer = content.strip() if isinstance(content, str) else str(content).strip()
 
         logger.debug(
             "Generated %d-char answer for: '%.60s …'", len(answer), question
@@ -178,4 +179,5 @@ class Generator:
             question=question,
         )
         response = await self.llm.ainvoke(messages)
-        return response.content.strip()
+        content = response.content
+        return content.strip() if isinstance(content, str) else str(content).strip()

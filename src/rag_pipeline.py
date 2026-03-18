@@ -152,6 +152,10 @@ class RAGPipeline:
         self._ensure_built()
 
         retrieval: RetrievalResult = self._retriever.retrieve(question)
+
+        if not retrieval.contexts:
+            logger.warning("No contexts retrieved for: '%.80s'", question)
+
         answer = self._generator.generate(question, retrieval.contexts)
 
         return RAGResult(
